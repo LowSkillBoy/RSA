@@ -92,15 +92,18 @@ private:
 	vector<int>decode;
 	map<char,int > Table;
 	map<int, char > BackTable;
-	string text;
+	string ReturnCode;
 	list<string> NewText;
+	string Text;
 	vector<int> safe;
 	int T;
 	Key K;
+	bool check = false;
+	vector<int> Dcode;
 public:
 	RSA();
-	void encrypt();
-	void decrypt();
+	string encrypt(string );
+	string decrypt(string);
 };
 #include "RSA.h"
 
@@ -149,11 +152,10 @@ RSA::RSA()
 	id++;
 	BackTable.emplace(id, ' ');
 }
-void RSA::encrypt() {
+string RSA::encrypt(string text) {
 	Key k;
 
-	cout << "Введіть текст який потрібно зашифрувати: " << endl;
-	getline(cin, text);
+	
 	char tmp;
 	k.OpenKey();
 	safe.push_back(k.e);
@@ -163,27 +165,25 @@ void RSA::encrypt() {
 		T = Table[tmp];
 
 		C = (Pow(T, k.e)) % k.n;
+		
+		ReturnCode+=to_string(C);
 		code.push_back(C);
 		decode.push_back(T);
 
 	}
-	cout << "Зашифроване повідомлення:" << endl;
-	for (auto it = code.begin(); it != code.end(); ++it) {
-		cout << *it;
-	}
-	cout<< endl;
+	check = true;
+	return ReturnCode;
 }
-void RSA::decrypt() {
+string RSA::decrypt(string text) {
 	Key k;
 	int s;
 	string tmp;
 	int R;
-	//k.OpenKey();
 	auto it = safe.begin();
 	s = *it;
 	k.CloseKey(s);
 	k.Res();
-
+	if(check==true){
 	for (int i = 0; i < text.length(); i++) {
 
 		C = decode[i];
@@ -194,13 +194,32 @@ void RSA::decrypt() {
 	for (int i = 0; i < text.length(); i++) {
 		T = decode[i];
 		tmp = BackTable[T];
+		Text += tmp;
 		NewText.push_back(tmp);
 	}
-	cout << "Розшифроване повідомлення:" << endl;
-	for (auto it = NewText.begin(); it != NewText.end(); ++it) {
-		cout << *it;
+	
+	return Text;
+}
+	else {
+		for (int i = 0; i < text.length(); i++) {
+			Dcode.push_back(text[i]);
+			C = Dcode[i];
+			T = (Pow(C, k.Result)) % k.n;
+			tmp = BackTable[T];
+			Text += tmp;
+			NewText.push_back(tmp);
+
+		}
+		return Text;
+
 	}
 }
+#include <iostream>
+#include <list> 
+#include "windows.h"
+#include <locale>
+#include <cmath> 
+#include <windows.h>
 #include <conio.h>
 #include <stdlib.h> 
 #include <stdio.h>
@@ -212,10 +231,12 @@ using namespace std;
 int main() {
 	SetConsoleCP(1251);
 	SetConsoleOutputCP(1251);
-	
+	string text;
+	cout << "Введіть текст який потрібно зашифрувати: " << endl;
+	getline(cin, text);
 	RSA R;
-	R.encrypt();
-	R.decrypt();
+	R.encrypt(text);
+	R.decrypt(text);
 	_getch();
 	return 0;
 }
