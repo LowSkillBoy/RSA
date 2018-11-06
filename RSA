@@ -1,0 +1,221 @@
+#pragma once
+#include <iostream>
+#include <cmath> 
+#include <vector>
+
+using namespace std;
+
+
+class Key {
+protected:
+	int p=7, q=13;
+	int I;
+	int f;
+	
+
+public:
+	int  n ;
+	int e;
+	int d;
+	int Result;
+	Key();
+	int OpenKey();
+	int CloseKey(int);
+	int Res();
+};
+
+
+#include "Key.h"
+int NOD(int a)
+{
+	int c,b;
+	b = rand() % 10;
+	while (b==1) {
+		b= rand() % 10;
+		c = a % b;
+		a = b;
+		b = c;
+	}
+	return b;
+}
+Key::Key() {
+	n = p * q;
+	f = (p - 1)*(q - 1);
+}
+
+int Key::OpenKey() {
+	int i = 2;
+		do{
+
+		e = NOD(f);
+
+		if (e%i == 0 && e < f) {
+			if (e % 2 == 0) { e++; }
+			break;
+
+		}
+		i++;
+	}while (i <= (sqrt(abs(e))));
+	
+	return e;
+}
+int Key::CloseKey(int e) {
+	int  arr[] = { 1,2,3,4,5,6,7,8,9 };
+	
+	for(int j=0;j<9;j++){
+		d = (arr[j]*f + 1) /e;
+		if (d%arr[j] == 0 ) {
+			I=arr[j];
+			break;
+
+		}
+	}
+	
+	return d;
+}
+int Key::Res(){
+Result = (I*f + 1) / d;
+
+return Result;
+}
+#pragma once
+#include"Key.h"
+#include <map>
+#include<list>
+#include<string>
+class RSA : public Key
+{
+private:
+	int id = 0;
+	long int C;
+	vector<int> code;
+	vector<int>decode;
+	map<char,int > Table;
+	map<int, char > BackTable;
+	string text;
+	list<string> NewText;
+	vector<int> safe;
+	int T;
+	Key K;
+public:
+	RSA();
+	void encrypt();
+	void decrypt();
+};
+#include "RSA.h"
+
+int Pow(int a, int b) {
+	long long answer = a;
+	for (int i = 1; i <= b; i++)
+		answer = a * a;
+	return answer;
+}
+RSA::RSA()
+{
+
+
+	char trans;
+	for (int i = 65; i <= 90; i++) {
+		id++;
+		trans = (char)i;
+		Table.emplace(trans, id);
+	}
+	for (int i = 97; i <= 122; i++) {
+		id++;
+		trans = (char)i;
+		Table.emplace(trans, id);
+	}
+	id++;
+	Table.emplace(' ', id);
+
+	/*for (int i = 48; i <= 57; i++) {
+	id++;
+	trans = (char)i;
+	Table.emplace(trans,id );
+	}
+	for (auto it = Table.begin(); it != Table.end(); ++it)
+	cout << "-> " << it->first << " id=" << it->second << endl;*/
+	id = 0;
+	for (int i = 65; i <= 90; i++) {
+		id++;
+		trans = (char)i;
+		BackTable.emplace(id, trans);
+	}
+	for (int i = 97; i <= 122; i++) {
+		id++;
+		trans = (char)i;
+		BackTable.emplace(id, trans);
+	}
+	id++;
+	BackTable.emplace(id, ' ');
+}
+void RSA::encrypt() {
+	Key k;
+
+	cout << "Введіть текст який потрібно зашифрувати: " << endl;
+	getline(cin, text);
+	char tmp;
+	k.OpenKey();
+	safe.push_back(k.e);
+	for (int i = 0; i < text.length(); i++) {
+		tmp = text[i];
+
+		T = Table[tmp];
+
+		C = (Pow(T, k.e)) % k.n;
+		code.push_back(C);
+		decode.push_back(T);
+
+	}
+	cout << "Зашифроване повідомлення:" << endl;
+	for (auto it = code.begin(); it != code.end(); ++it) {
+		cout << *it;
+	}
+	cout<< endl;
+}
+void RSA::decrypt() {
+	Key k;
+	int s;
+	string tmp;
+	int R;
+	//k.OpenKey();
+	auto it = safe.begin();
+	s = *it;
+	k.CloseKey(s);
+	k.Res();
+
+	for (int i = 0; i < text.length(); i++) {
+
+		C = decode[i];
+		T = (Pow(C, k.Result)) % k.n;
+		decode.push_back(T);
+
+	}
+	for (int i = 0; i < text.length(); i++) {
+		T = decode[i];
+		tmp = BackTable[T];
+		NewText.push_back(tmp);
+	}
+	cout << "Розшифроване повідомлення:" << endl;
+	for (auto it = NewText.begin(); it != NewText.end(); ++it) {
+		cout << *it;
+	}
+}
+#include <conio.h>
+#include <stdlib.h> 
+#include <stdio.h>
+#include "Key.h"
+#include"RSA.h"
+
+using namespace std;
+
+int main() {
+	SetConsoleCP(1251);
+	SetConsoleOutputCP(1251);
+	
+	RSA R;
+	R.encrypt();
+	R.decrypt();
+	_getch();
+	return 0;
+}
